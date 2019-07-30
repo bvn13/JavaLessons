@@ -190,7 +190,7 @@ You can take a look at [full class code](src/test/java/com/bvn13/example/springb
 
 ## New annotation usage
 
-And now we'll apply new annotation to aour test class:
+And now we'll apply new annotation to aour [test class](src/test/java/com/bvn13/example/springboot/junit/skiptest/SkiptestApplicationTests.java):
 
 ``` java
 @SpringBootTest
