@@ -186,7 +186,7 @@ public class TestEnabledCondition implements ExecutionCondition {
 }
 ```
 
-You can take a look at [full class code](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledPrefix.java) folowing to link.
+You can take a look at [full class code](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledCondition.java) folowing to link.
 
 ## New annotation usage
 
