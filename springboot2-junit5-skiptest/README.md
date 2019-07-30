@@ -101,7 +101,7 @@ Here is the snippet to obtain Spring environment right from the ExtensionContext
 Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 ```
 
-Take a look at [full class code of TestEnabledCondition](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledCondition.java)
+Take a look at [full class code of TestEnabledCondition](https://github.com/bvn13/JavaLessons/blob/9a34719dbc7b616f0234e4dcd0d5376905aacc2e/springboot2-junit5-skiptest/src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledCondition.java)
 
 # Make some tests
 
@@ -141,4 +141,75 @@ The result:
 
 ![](img/result.png)
 
-### Good job!
+# Next step - generalizing properties' names
+
+It is so annoyingly to write the full path to our application properties in every test.
+
+So the next step is to generalify that path in test class annotation.
+
+Let's create a new [annotation](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledPrefix.java) called `TestEnabledPrefix`:
+
+``` java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TestEnabledPrefix {
+    String prefix();
+}
+```
+
+## TestEnabledPrefix annotation usage
+
+There is no way avoiding new annotation processing:
+
+``` java
+public class TestEnabledCondition implements ExecutionCondition {
+
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    // ...
+            String prefix = null;
+
+            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
+            if (classAnnotationPrefix.isPresent()) {
+                prefix = classAnnotationPrefix.get().prefix();
+            }
+
+            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
+                prefix += ".";
+            } else {
+                prefix = "";
+            }
+
+    // ...
+    }
+
+}
+```
+
+You can take a look at [full class code](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledPrefix.java) folowing to link.
+
+## New annotation usage
+
+And now we'll apply new annotation to aour test class:
+
+``` java
+@SpringBootTest
+@TestEnabledPrefix(property = "app.skip.test")
+public class SkiptestApplicationTests {
+
+    @TestEnabled(property = "first")
+    @Test
+    public void testFirst() {
+        assertTrue(true);
+    }
+
+    @TestEnabled(property = "second")
+    @Test
+    public void testSecond() {
+        assertTrue(false);
+    }
+
+}
+```
+
+Much more clear and obvious code.

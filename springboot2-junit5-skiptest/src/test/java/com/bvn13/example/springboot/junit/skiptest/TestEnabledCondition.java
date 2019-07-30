@@ -20,12 +20,30 @@ public class TestEnabledCondition implements ExecutionCondition {
 
         Optional<TestEnabled> annotation = context.getElement().map(e -> e.getAnnotation(TestEnabled.class));
         if (annotation.isPresent()) {
+            String prefix = null;
+
+            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
+            if (classAnnotationPrefix.isPresent()) {
+                prefix = classAnnotationPrefix.get().prefix();
+            }
+
+            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
+                prefix += ".";
+            } else {
+                prefix = "";
+            }
+
             String property = annotation.get().property();
-            Boolean value = environment.getProperty(property, Boolean.class);
-            if (Boolean.TRUE.equals(value)) {
+            if (property.isEmpty()) {
+                return ConditionEvaluationResult.disabled("Disabled - property not set!");
+            }
+            Boolean value = environment.getProperty(prefix + property, Boolean.class);
+            if (value == null) {
+                return ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!");
+            } else if (Boolean.TRUE.equals(value)) {
                 return ConditionEvaluationResult.enabled("Enabled by property: "+property);
             } else {
-                return ConditionEvaluationResult.disabled("Disable by property: "+property);
+                return ConditionEvaluationResult.disabled("Disabled by property: "+property);
             }
         }
         return ConditionEvaluationResult.enabled("Enabled by default");
