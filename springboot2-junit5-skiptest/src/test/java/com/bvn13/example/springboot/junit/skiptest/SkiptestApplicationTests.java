@@ -6,15 +6,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@TestEnabledPrefix(property = "app.skip.test")
 public class SkiptestApplicationTests {
 
-    @TestEnabled(property = "app.skip.test.first")
+    @TestEnabled(property = "first")
     @Test
     public void testFirst() {
         assertTrue(true);
     }
 
-    @TestEnabled(property = "app.skip.test.second")
+    @TestEnabled(property = "second")
     @Test
     public void testSecond() {
         assertTrue(false);
