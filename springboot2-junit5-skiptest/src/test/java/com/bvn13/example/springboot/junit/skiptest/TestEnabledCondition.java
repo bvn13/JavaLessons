@@ -15,19 +15,19 @@ public class TestEnabledCondition implements ExecutionCondition {
 
     static class AnnotationDescription {
         String name;
-        Boolean value;
+        Boolean annotationEnabled;
         AnnotationDescription(String prefix, String property) {
             this.name = prefix + property;
         }
         String getName() {
             return name;
         }
-        AnnotationDescription setValue(Boolean value) {
-            this.value = value;
+        AnnotationDescription setAnnotationEnabled(Boolean value) {
+            this.annotationEnabled = value;
             return this;
         }
-        Boolean getValue() {
-            return value;
+        Boolean isAnnotationEnabled() {
+            return annotationEnabled;
         }
     }
 
@@ -48,9 +48,9 @@ public class TestEnabledCondition implements ExecutionCondition {
                 .map(e -> e.getAnnotation(TestEnabled.class))
                 .map(TestEnabled::property)
                 .map(property -> makeDescription(context, property))
-                .map(description -> description.setValue(environment.getProperty(description.getName(), Boolean.class)))
+                .map(description -> description.setAnnotationEnabled(environment.getProperty(description.getName(), Boolean.class)))
                 .map(description -> {
-                    if (Boolean.TRUE.equals(description.getValue())) {
+                    if (description.isAnnotationEnabled()) {
                         return ConditionEvaluationResult.enabled("Enabled by property: "+description.getName());
                     } else {
                         return ConditionEvaluationResult.disabled("Disabled by property: "+description.getName());

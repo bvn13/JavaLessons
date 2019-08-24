@@ -176,22 +176,22 @@ There is no way avoiding new annotation processing:
 public class TestEnabledCondition implements ExecutionCondition {
 
     static class AnnotationDescription {
-        String name;
-        Boolean value;
-        AnnotationDescription(String prefix, String property) {
-            this.name = prefix + property;
+            String name;
+            Boolean annotationEnabled;
+            AnnotationDescription(String prefix, String property) {
+                this.name = prefix + property;
+            }
+            String getName() {
+                return name;
+            }
+            AnnotationDescription setAnnotationEnabled(Boolean value) {
+                this.annotationEnabled = value;
+                return this;
+            }
+            Boolean isAnnotationEnabled() {
+                return annotationEnabled;
+            }
         }
-        String getName() {
-            return name;
-        }
-        AnnotationDescription setValue(Boolean value) {
-            this.value = value;
-            return this;
-        }
-        Boolean getValue() {
-            return value;
-        }
-    }
 
     /* ... */
 }
@@ -235,9 +235,9 @@ public class TestEnabledCondition implements ExecutionCondition {
                 .map(e -> e.getAnnotation(TestEnabled.class))
                 .map(TestEnabled::property)
                 .map(property -> makeDescription(context, property))
-                .map(description -> description.setValue(environment.getProperty(description.getName(), Boolean.class)))
+                .map(description -> description.setAnnotationEnabled(environment.getProperty(description.getName(), Boolean.class)))
                 .map(description -> {
-                    if (Boolean.TRUE.equals(description.getValue())) {
+                    if (description.isAnnotationEnabled()) {
                         return ConditionEvaluationResult.enabled("Enabled by property: "+description.getName());
                     } else {
                         return ConditionEvaluationResult.disabled("Disabled by property: "+description.getName());
