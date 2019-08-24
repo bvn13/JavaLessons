@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Optional;
 
 /**
  * @author bvn13
@@ -14,35 +13,50 @@ import java.util.Optional;
  */
 public class TestEnabledCondition implements ExecutionCondition {
 
+    static class AnnotationDescription {
+        String prefix;
+        String property;
+        Boolean value;
+        AnnotationDescription(String prefix, String property) {
+            this.prefix = prefix;
+            this.property = property;
+        }
+        String getName() {
+            return prefix + property;
+        }
+        AnnotationDescription setValue(Boolean value) {
+            this.value = value;
+            return this;
+        }
+        Boolean getValue() {
+            return value;
+        }
+    }
+
+    private AnnotationDescription makeDescription(ExtensionContext context, String property) {
+        String prefix = context.getTestClass()
+                .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
+                .map(TestEnabledPrefix::prefix)
+                .map(pref -> !pref.isEmpty() && !pref.endsWith(".") ? pref + "." : "")
+                .orElse("");
+        return new AnnotationDescription(prefix, property);
+    }
+
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 
         return context.getElement()
                 .map(e -> e.getAnnotation(TestEnabled.class))
-                .map(annotation -> {
-                    String property = annotation.property();
-
-                    String prefix = context.getTestClass()
-                            .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
-                            .map(pref -> {
-                                if (!pref.prefix().isEmpty() && !pref.prefix().endsWith(".")) {
-                                    return pref.prefix()+".";
-                                } else {
-                                    return "";
-                                }
-                            }).orElse("");
-
-                    return Optional.ofNullable(environment.getProperty(prefix + property, Boolean.class))
-                            .map(value -> {
-                                if (Boolean.TRUE.equals(value)) {
-                                    return ConditionEvaluationResult.enabled("Enabled by property: "+property);
-                                } else {
-                                    return ConditionEvaluationResult.disabled("Disabled by property: "+property);
-                                }
-                            }).orElse(
-                                    ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!")
-                            );
+                .map(TestEnabled::property)
+                .map(property -> makeDescription(context, property))
+                .map(description -> description.setValue(environment.getProperty(description.getName(), Boolean.class)))
+                .map(description -> {
+                    if (Boolean.TRUE.equals(description.getValue())) {
+                        return ConditionEvaluationResult.enabled("Enabled by property: "+description.getName());
+                    } else {
+                        return ConditionEvaluationResult.disabled("Disabled by property: "+description.getName());
+                    }
                 }).orElse(
                         ConditionEvaluationResult.enabled("Enabled by default")
                 );
