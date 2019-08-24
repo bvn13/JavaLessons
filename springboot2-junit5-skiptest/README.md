@@ -69,16 +69,25 @@ public class TestEnabledCondition implements ExecutionCondition {
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Optional<TestEnabled> annotation = context.getElement().map(e -> e.getAnnotation(TestEnabled.class));
-        if (annotation.isPresent()) {
-            String property = annotation.get().property();
-            Boolean value = /* ... */;
-            if (Boolean.TRUE.equals(value)) {
-                return ConditionEvaluationResult.enabled("Enabled by property: "+property);
-            } else {
-                return ConditionEvaluationResult.disabled("Disable by property: "+property);
-            }
-        }
-        return ConditionEvaluationResult.enabled("Enabled by default");
+
+        return context.getElement()
+                        .map(e -> e.getAnnotation(TestEnabled.class))
+                        .map(annotation -> {
+                            String property = annotation.property();
+        
+                            return Optional.ofNullable(environment.getProperty(property, Boolean.class))
+                                    .map(value -> {
+                                        if (Boolean.TRUE.equals(value)) {
+                                            return ConditionEvaluationResult.enabled("Enabled by property: "+property);
+                                        } else {
+                                            return ConditionEvaluationResult.disabled("Disabled by property: "+property);
+                                        }
+                                    }).orElse(
+                                            ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!")
+                                    );
+                        }).orElse(
+                                ConditionEvaluationResult.enabled("Enabled by default")
+                        );
     }
 }
 ```
@@ -166,21 +175,36 @@ public class TestEnabledCondition implements ExecutionCondition {
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-    // ...
-            String prefix = null;
+        Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 
-            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
-            if (classAnnotationPrefix.isPresent()) {
-                prefix = classAnnotationPrefix.get().prefix();
-            }
-
-            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
-                prefix += ".";
-            } else {
-                prefix = "";
-            }
-
-    // ...
+        return context.getElement()
+                        .map(e -> e.getAnnotation(TestEnabled.class))
+                        .map(annotation -> {
+                            String property = annotation.property();
+        
+                            String prefix = context.getTestClass()
+                                    .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
+                                    .map(pref -> {
+                                        if (!pref.prefix().isEmpty() && !pref.prefix().endsWith(".")) {
+                                            return pref.prefix()+".";
+                                        } else {
+                                            return "";
+                                        }
+                                    }).orElse("");
+        
+                            return Optional.ofNullable(environment.getProperty(prefix + property, Boolean.class))
+                                    .map(value -> {
+                                        if (Boolean.TRUE.equals(value)) {
+                                            return ConditionEvaluationResult.enabled("Enabled by property: "+property);
+                                        } else {
+                                            return ConditionEvaluationResult.disabled("Disabled by property: "+property);
+                                        }
+                                    }).orElse(
+                                            ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!")
+                                    );
+                        }).orElse(
+                                ConditionEvaluationResult.enabled("Enabled by default")
+                        );
     }
 
 }
@@ -213,3 +237,8 @@ public class SkiptestApplicationTests {
 ```
 
 Much more clear and obvious code.
+
+
+## Thanks to...
+
+1) Reddit user [dpash](https://www.reddit.com/user/dpash/)

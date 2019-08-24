@@ -18,34 +18,34 @@ public class TestEnabledCondition implements ExecutionCondition {
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 
-        Optional<TestEnabled> annotation = context.getElement().map(e -> e.getAnnotation(TestEnabled.class));
-        if (annotation.isPresent()) {
-            String prefix = null;
+        return context.getElement()
+                .map(e -> e.getAnnotation(TestEnabled.class))
+                .map(annotation -> {
+                    String property = annotation.property();
 
-            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
-            if (classAnnotationPrefix.isPresent()) {
-                prefix = classAnnotationPrefix.get().prefix();
-            }
+                    String prefix = context.getTestClass()
+                            .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
+                            .map(pref -> {
+                                if (!pref.prefix().isEmpty() && !pref.prefix().endsWith(".")) {
+                                    return pref.prefix()+".";
+                                } else {
+                                    return "";
+                                }
+                            }).orElse("");
 
-            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
-                prefix += ".";
-            } else {
-                prefix = "";
-            }
+                    return Optional.ofNullable(environment.getProperty(prefix + property, Boolean.class))
+                            .map(value -> {
+                                if (Boolean.TRUE.equals(value)) {
+                                    return ConditionEvaluationResult.enabled("Enabled by property: "+property);
+                                } else {
+                                    return ConditionEvaluationResult.disabled("Disabled by property: "+property);
+                                }
+                            }).orElse(
+                                    ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!")
+                            );
+                }).orElse(
+                        ConditionEvaluationResult.enabled("Enabled by default")
+                );
 
-            String property = annotation.get().property();
-            if (property.isEmpty()) {
-                return ConditionEvaluationResult.disabled("Disabled - property not set!");
-            }
-            Boolean value = environment.getProperty(prefix + property, Boolean.class);
-            if (value == null) {
-                return ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!");
-            } else if (Boolean.TRUE.equals(value)) {
-                return ConditionEvaluationResult.enabled("Enabled by property: "+property);
-            } else {
-                return ConditionEvaluationResult.disabled("Disabled by property: "+property);
-            }
-        }
-        return ConditionEvaluationResult.enabled("Enabled by default");
     }
 }

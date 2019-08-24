@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-@TestEnabledPrefix(property = "app.skip.test")
+@TestEnabledPrefix(prefix = "app.skip.test")
 public class SkiptestApplicationTests {
 
     @TestEnabled(property = "first")
