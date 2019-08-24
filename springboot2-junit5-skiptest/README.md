@@ -225,6 +225,8 @@ public class TestEnabledCondition implements ExecutionCondition {
 ``` java
 public class TestEnabledCondition implements ExecutionCondition {
 
+    /* ... */
+
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
