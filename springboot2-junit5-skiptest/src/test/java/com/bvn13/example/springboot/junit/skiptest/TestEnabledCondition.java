@@ -14,15 +14,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class TestEnabledCondition implements ExecutionCondition {
 
     static class AnnotationDescription {
-        String prefix;
-        String property;
+        String name;
         Boolean value;
         AnnotationDescription(String prefix, String property) {
-            this.prefix = prefix;
-            this.property = property;
+            this.name = prefix + property;
         }
         String getName() {
-            return prefix + property;
+            return name;
         }
         AnnotationDescription setValue(Boolean value) {
             this.value = value;

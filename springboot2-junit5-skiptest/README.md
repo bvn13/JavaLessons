@@ -176,15 +176,13 @@ There is no way avoiding new annotation processing:
 public class TestEnabledCondition implements ExecutionCondition {
 
     static class AnnotationDescription {
-        String prefix;
-        String property;
+        String name;
         Boolean value;
         AnnotationDescription(String prefix, String property) {
-            this.prefix = prefix;
-            this.property = property;
+            this.name = prefix + property;
         }
         String getName() {
-            return prefix + property;
+            return name;
         }
         AnnotationDescription setValue(Boolean value) {
             this.value = value;
@@ -199,7 +197,7 @@ public class TestEnabledCondition implements ExecutionCondition {
 }
 ```
 
-It helps us to process annotations using lamdas.
+It helps us to process annotations using lambdas.
 
 ### Then create a method to extract prefix from context
 
@@ -258,7 +256,7 @@ You can take a look at [full class code](src/test/java/com/bvn13/example/springb
 
 ## New annotation usage
 
-And now we'll apply new annotation to aour [test class](src/test/java/com/bvn13/example/springboot/junit/skiptest/SkiptestApplicationTests.java):
+And now we'll apply new annotation to our [test class](src/test/java/com/bvn13/example/springboot/junit/skiptest/SkiptestApplicationTests.java):
 
 ``` java
 @SpringBootTest
@@ -285,4 +283,5 @@ Much more clear and obvious code.
 
 ## Thanks to...
 
-1) Reddit user [dpash](https://www.reddit.com/user/dpash/)
+1) Reddit user [dpash](https://www.reddit.com/user/dpash/) for [advice](https://www.reddit.com/r/java/comments/cuiqxf/skip_junit_test_according_to_java_springframework/exxz1yr?utm_source=share&utm_medium=web2x)
+2) Reddit user [BoyRobot777](https://www.reddit.com/user/BoyRobot777/) for [advice](https://www.reddit.com/r/java/comments/cuiqxf/skip_junit_test_according_to_java_springframework/exy8cnh?utm_source=share&utm_medium=web2x)
