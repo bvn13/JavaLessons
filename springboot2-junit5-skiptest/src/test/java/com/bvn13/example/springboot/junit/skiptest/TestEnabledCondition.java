@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Optional;
 
 /**
  * @author bvn13
@@ -14,38 +13,51 @@ import java.util.Optional;
  */
 public class TestEnabledCondition implements ExecutionCondition {
 
+    static class AnnotationDescription {
+        String name;
+        Boolean annotationEnabled;
+        AnnotationDescription(String prefix, String property) {
+            this.name = prefix + property;
+        }
+        String getName() {
+            return name;
+        }
+        AnnotationDescription setAnnotationEnabled(Boolean value) {
+            this.annotationEnabled = value;
+            return this;
+        }
+        Boolean isAnnotationEnabled() {
+            return annotationEnabled;
+        }
+    }
+
+    private AnnotationDescription makeDescription(ExtensionContext context, String property) {
+        String prefix = context.getTestClass()
+                .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
+                .map(TestEnabledPrefix::prefix)
+                .map(pref -> !pref.isEmpty() && !pref.endsWith(".") ? pref + "." : "")
+                .orElse("");
+        return new AnnotationDescription(prefix, property);
+    }
+
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 
-        Optional<TestEnabled> annotation = context.getElement().map(e -> e.getAnnotation(TestEnabled.class));
-        if (annotation.isPresent()) {
-            String prefix = null;
+        return context.getElement()
+                .map(e -> e.getAnnotation(TestEnabled.class))
+                .map(TestEnabled::property)
+                .map(property -> makeDescription(context, property))
+                .map(description -> description.setAnnotationEnabled(environment.getProperty(description.getName(), Boolean.class)))
+                .map(description -> {
+                    if (description.isAnnotationEnabled()) {
+                        return ConditionEvaluationResult.enabled("Enabled by property: "+description.getName());
+                    } else {
+                        return ConditionEvaluationResult.disabled("Disabled by property: "+description.getName());
+                    }
+                }).orElse(
+                        ConditionEvaluationResult.enabled("Enabled by default")
+                );
 
-            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
-            if (classAnnotationPrefix.isPresent()) {
-                prefix = classAnnotationPrefix.get().prefix();
-            }
-
-            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
-                prefix += ".";
-            } else {
-                prefix = "";
-            }
-
-            String property = annotation.get().property();
-            if (property.isEmpty()) {
-                return ConditionEvaluationResult.disabled("Disabled - property not set!");
-            }
-            Boolean value = environment.getProperty(prefix + property, Boolean.class);
-            if (value == null) {
-                return ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!");
-            } else if (Boolean.TRUE.equals(value)) {
-                return ConditionEvaluationResult.enabled("Enabled by property: "+property);
-            } else {
-                return ConditionEvaluationResult.disabled("Disabled by property: "+property);
-            }
-        }
-        return ConditionEvaluationResult.enabled("Enabled by default");
     }
 }

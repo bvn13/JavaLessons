@@ -69,16 +69,25 @@ public class TestEnabledCondition implements ExecutionCondition {
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         Optional<TestEnabled> annotation = context.getElement().map(e -> e.getAnnotation(TestEnabled.class));
-        if (annotation.isPresent()) {
-            String property = annotation.get().property();
-            Boolean value = /* ... */;
-            if (Boolean.TRUE.equals(value)) {
-                return ConditionEvaluationResult.enabled("Enabled by property: "+property);
-            } else {
-                return ConditionEvaluationResult.disabled("Disable by property: "+property);
-            }
-        }
-        return ConditionEvaluationResult.enabled("Enabled by default");
+
+        return context.getElement()
+                        .map(e -> e.getAnnotation(TestEnabled.class))
+                        .map(annotation -> {
+                            String property = annotation.property();
+        
+                            return Optional.ofNullable(environment.getProperty(property, Boolean.class))
+                                    .map(value -> {
+                                        if (Boolean.TRUE.equals(value)) {
+                                            return ConditionEvaluationResult.enabled("Enabled by property: "+property);
+                                        } else {
+                                            return ConditionEvaluationResult.disabled("Disabled by property: "+property);
+                                        }
+                                    }).orElse(
+                                            ConditionEvaluationResult.disabled("Disabled - property <"+property+"> not set!")
+                                    );
+                        }).orElse(
+                                ConditionEvaluationResult.enabled("Enabled by default")
+                        );
     }
 }
 ```
@@ -161,36 +170,95 @@ public @interface TestEnabledPrefix {
 
 There is no way avoiding new annotation processing:
 
+### Let's create Annotation Descriptor as follows
+
+```java
+public class TestEnabledCondition implements ExecutionCondition {
+
+    static class AnnotationDescription {
+            String name;
+            Boolean annotationEnabled;
+            AnnotationDescription(String prefix, String property) {
+                this.name = prefix + property;
+            }
+            String getName() {
+                return name;
+            }
+            AnnotationDescription setAnnotationEnabled(Boolean value) {
+                this.annotationEnabled = value;
+                return this;
+            }
+            Boolean isAnnotationEnabled() {
+                return annotationEnabled;
+            }
+        }
+
+    /* ... */
+}
+```
+
+It helps us to process annotations using lambdas.
+
+### Then create a method to extract prefix from context
+
+```java
+public class TestEnabledCondition implements ExecutionCondition {
+
+    /* ... */
+
+    private AnnotationDescription makeDescription(ExtensionContext context, String property) {
+        String prefix = context.getTestClass()
+                .map(cl -> cl.getAnnotation(TestEnabledPrefix.class))
+                .map(TestEnabledPrefix::prefix)
+                .map(pref -> !pref.isEmpty() && !pref.endsWith(".") ? pref + "." : "")
+                .orElse("");
+        return new AnnotationDescription(prefix, property);
+    }
+
+    /* ... */
+
+}
+```
+
+### And now process the annotation value
+
 ``` java
 public class TestEnabledCondition implements ExecutionCondition {
 
+    /* ... */
+
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-    // ...
-            String prefix = null;
+        Environment environment = SpringExtension.getApplicationContext(context).getEnvironment();
 
-            Optional<TestEnabledPrefix> classAnnotationPrefix = context.getTestClass().map(cl -> cl.getAnnotation(TestEnabledPrefix.class));
-            if (classAnnotationPrefix.isPresent()) {
-                prefix = classAnnotationPrefix.get().prefix();
-            }
+        return context.getElement()
+                .map(e -> e.getAnnotation(TestEnabled.class))
+                .map(TestEnabled::property)
+                .map(property -> makeDescription(context, property))
+                .map(description -> description.setAnnotationEnabled(environment.getProperty(description.getName(), Boolean.class)))
+                .map(description -> {
+                    if (description.isAnnotationEnabled()) {
+                        return ConditionEvaluationResult.enabled("Enabled by property: "+description.getName());
+                    } else {
+                        return ConditionEvaluationResult.disabled("Disabled by property: "+description.getName());
+                    }
+                }).orElse(
+                        ConditionEvaluationResult.enabled("Enabled by default")
+                );
 
-            if (prefix != null && !prefix.isEmpty() && !prefix.endsWith(".")) {
-                prefix += ".";
-            } else {
-                prefix = "";
-            }
-
-    // ...
     }
 
 }
 ```
 
+## 
+
+
 You can take a look at [full class code](src/test/java/com/bvn13/example/springboot/junit/skiptest/TestEnabledCondition.java) folowing to link.
 
 ## New annotation usage
 
-And now we'll apply new annotation to aour [test class](src/test/java/com/bvn13/example/springboot/junit/skiptest/SkiptestApplicationTests.java):
+And now we'll apply new annotation to our [test class](src/test/java/com/bvn13/example/springboot/junit/skiptest/SkiptestApplicationTests.java):
 
 ``` java
 @SpringBootTest
@@ -213,3 +281,9 @@ public class SkiptestApplicationTests {
 ```
 
 Much more clear and obvious code.
+
+
+## Thanks to...
+
+1) Reddit user [dpash](https://www.reddit.com/user/dpash/) for [advice](https://www.reddit.com/r/java/comments/cuiqxf/skip_junit_test_according_to_java_springframework/exxz1yr?utm_source=share&utm_medium=web2x)
+2) Reddit user [BoyRobot777](https://www.reddit.com/user/BoyRobot777/) for [advice](https://www.reddit.com/r/java/comments/cuiqxf/skip_junit_test_according_to_java_springframework/exy8cnh?utm_source=share&utm_medium=web2x)
