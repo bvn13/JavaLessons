@@ -62,3 +62,54 @@ You may run [testControllerLoggingWithFilter](./src/test/java/com/bvn13/example/
 
 So our goal is achieved. We can see all files we request and not existing file too.
 
+
+## Building a Handler Interceptor
+
+Handler interceptors have more power to process your requests since they handle not the fact of request but its events: before request, after request, after completion.
+
+You can check out Spring class `org.springframework.web.servlet.handler.HandlerInterceptorAdapter` to see its methods we are able to implement in our handler.
+
+Lets [our handler](/src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/RequestLoggingHandler.java) implement `preHandle` and `postHandle` events:
+
+```java
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        log.debug(
+                String.format("HANDLER(pre) URL: %s", request.getRequestURI())
+        );
+
+        return super.preHandle(request, response, handler);
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        log.debug(
+                String.format("HANDLER(post) URL: %s", request.getRequestURI())
+        );
+
+        super.postHandle(request, response, handler, modelAndView);
+    }
+```
+
+But the handler will not work until we actually tell Spring to use it. We must build a [configuration](/src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/WebApplicationConfiguration.java) to enable our handler.
+
+```java
+@Configuration
+public class WebApplicationConfiguration implements WebMvcConfigurer {
+
+    @Setter(onMethod_ = @Autowired)
+    private RequestLoggingHandler requestLogger;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(requestLogger);
+    }
+}
+```
+
+### Result 
+
+Lets start our test to check out the result!
+
+![](./img/2019-09-30_23-25.png)
+
