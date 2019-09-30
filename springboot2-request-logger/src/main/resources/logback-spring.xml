@@ -20,4 +20,8 @@
         <appender-ref ref="Console" />
     </logger>
 
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter">
+        <level value="DEBUG" />
+    </logger>
+
 </configuration>

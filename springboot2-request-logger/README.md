@@ -49,13 +49,13 @@ And we are able to log anything regarding the request inside `doFilterInternal` 
 You may run [testControllerLoggingWithFilter](./src/test/java/com/bvn13/example/springboot/springrequestlogger/SpringrequestloggerApplicationTests.java) to see the result
 
 ```java
-    @Test(expected = HttpClientErrorException.NotFound.class)
-    public void testControllerLoggingWithFilter() {
-        restTemplate.getForObject("http://localhost:"+port+"/", String.class);
-        restTemplate.getForObject("http://localhost:"+port+"/test.js", String.class);
-        restTemplate.getForObject("http://localhost:"+port+"/test.css", String.class);
-        restTemplate.getForObject("http://localhost:"+port+"/does-not-exist.file", String.class);
-    }
+@Test(expected = HttpClientErrorException.NotFound.class)
+public void testControllerLoggingWithFilter() {
+    restTemplate.getForObject("http://localhost:"+port+"/", String.class);
+    restTemplate.getForObject("http://localhost:"+port+"/test.js", String.class);
+    restTemplate.getForObject("http://localhost:"+port+"/test.css", String.class);
+    restTemplate.getForObject("http://localhost:"+port+"/does-not-exist.file", String.class);
+}
 ```
 
 ![](./img/2019-09-29_21-09.png)
@@ -69,29 +69,29 @@ Handler interceptors have more power to process your requests since they handle 
 
 You can check out Spring class `org.springframework.web.servlet.handler.HandlerInterceptorAdapter` to see its methods we are able to implement in our handler.
 
-Lets [our handler](/src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/RequestLoggingHandler.java) implement `preHandle` and `postHandle` events:
+Lets [our handler](./src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/RequestLoggingHandler.java) implement `preHandle` and `postHandle` events:
 
 ```java
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        log.debug(
-                String.format("HANDLER(pre) URL: %s", request.getRequestURI())
-        );
+@Override
+public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    log.debug(
+            String.format("HANDLER(pre) URL: %s", request.getRequestURI())
+    );
 
-        return super.preHandle(request, response, handler);
-    }
+    return super.preHandle(request, response, handler);
+}
 
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        log.debug(
-                String.format("HANDLER(post) URL: %s", request.getRequestURI())
-        );
+@Override
+public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+    log.debug(
+            String.format("HANDLER(post) URL: %s", request.getRequestURI())
+    );
 
-        super.postHandle(request, response, handler, modelAndView);
-    }
+    super.postHandle(request, response, handler, modelAndView);
+}
 ```
 
-But the handler will not work until we actually tell Spring to use it. We must build a [configuration](/src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/WebApplicationConfiguration.java) to enable our handler.
+But the handler will not work until we actually tell Spring to use it. We must build a [configuration](./src/main/java/com/bvn13/example/springboot/springrequestlogger/handlers/WebApplicationConfiguration.java) to enable our handler.
 
 ```java
 @Configuration
@@ -113,3 +113,38 @@ Lets start our test to check out the result!
 
 ![](./img/2019-09-30_23-25.png)
 
+
+## Spring way to log requests
+
+Spring provides a mechanism to log every request out of the box - `CommonsRequestLoggingFilter` bean.
+
+You can implement an [instance of this class](./src/main/java/com/bvn13/example/springboot/springrequestlogger/config/RequestLoggingFilterConfig.java) ...
+
+```java
+@Bean
+public CommonsRequestLoggingFilter logFilter() {
+    CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+    filter.setIncludeQueryString(true);
+    filter.setIncludePayload(true);
+    filter.setMaxPayloadLength(10000);
+    filter.setIncludeHeaders(false);
+    filter.setAfterMessagePrefix("REQUEST DATA : ");
+    return filter;
+}
+```
+
+... and then set uo logging level into [`logback-spring.xml`](./src/main/resources/logback-spring.xml) located into `resources` or providing it externally ...
+
+```xml
+<logger name="org.springframework.web.filter.CommonsRequestLoggingFilter">
+    <level value="DEBUG" />
+</logger>
+```
+
+... to enable requests logging.
+
+### Result
+
+Starting our test we have the result:
+
+![](./img/2019-09-30_23-40.png)
