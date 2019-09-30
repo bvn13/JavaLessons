@@ -107,7 +107,7 @@ public class WebApplicationConfiguration implements WebMvcConfigurer {
 }
 ```
 
-### Result 
+### Result
 
 Lets start our test to check out the result!
 
@@ -133,7 +133,7 @@ public CommonsRequestLoggingFilter logFilter() {
 }
 ```
 
-... and then set uo logging level into [`logback-spring.xml`](./src/main/resources/logback-spring.xml) located into `resources` or providing it externally ...
+... and then set up logging level into [`logback-spring.xml`](./src/main/resources/logback-spring.xml) located into `resources` or providing it externally ...
 
 ```xml
 <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter">
