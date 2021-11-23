@@ -1,0 +1,8 @@
+camel:
+  springboot:
+    main-run-controller: true
+
+
+app:
+  bad-word: bird
+  good-word: lion
