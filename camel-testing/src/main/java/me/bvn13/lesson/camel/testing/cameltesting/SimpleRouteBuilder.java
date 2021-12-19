@@ -34,7 +34,6 @@ public class SimpleRouteBuilder extends RouteBuilder {
     @Value("${app.good-word}")
     private String goodWord;
 
-    private final ObjectMapper objectMapper;
     private final PropertiesProvider propertiesProvider;
 
     public static final String SUPERVISION_ROUTE_ID = "SUPERVISOR";
