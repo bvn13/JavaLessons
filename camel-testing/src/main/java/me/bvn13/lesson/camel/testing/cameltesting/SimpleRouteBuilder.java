@@ -48,7 +48,6 @@ public class SimpleRouteBuilder extends RouteBuilder {
         log.info("starting processing from {} to {}", source, destination);
 
         getCamelContext().setTracing(true);
-        getCamelContext().setTypeConverterStatisticsEnabled(true);
 
         from(source)                                                              // listen for new files
                 .tracing()
