@@ -10,12 +10,18 @@ import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import static me.bvn13.lesson.camel.testing.cameltesting.SimpleRouteBuilder.SUPERVISION_ROUTE_ID;
+import static me.bvn13.lesson.camel.testing.cameltesting.SupervisorResponseDto.Verdict.*;
 
+@ActiveProfiles(profiles = "test")
 @SpringBootTest(classes = CamelTestingApplication.class, properties = {
         "app.bad-word=duck",
-        "app.good-word=ostrich"
+        "app.good-word=ostrich",
+        "app.input.folder=/tmp/in",
+        "app.output.folder=/tmp/out"
 })
 @CamelSpringBootTest
 @UseAdviceWith
@@ -33,6 +39,7 @@ class CamelTestingApplicationTests {
     @Autowired
     CamelContext camelContext;
 
+    @DirtiesContext
     @Test
     void givenRoute_whenFileAppears_thenAllBadWordsChanged() throws Exception {
 
@@ -40,7 +47,7 @@ class CamelTestingApplicationTests {
         MockEndpoint endpoint = camelContext.getEndpoint(propertiesProvider.getOutputEndpoint(), MockEndpoint.class);
         endpoint.expectedBodiesReceived(GOOD);
         endpoint.setExpectedCount(1);
-        mockSupervision("PROCESS");
+        mockSupervision(PROCESS);
 
         camelContext.start(); // start CamelContext explicitly
 
@@ -54,13 +61,14 @@ class CamelTestingApplicationTests {
 
     }
 
+    @DirtiesContext
     @Test
     void givenRoute_whenFileAppearsAndRejectedBySupervisor_thenFileIsSkipped() throws Exception {
 
         // given
         MockEndpoint endpoint = camelContext.getEndpoint(propertiesProvider.getOutputEndpoint(), MockEndpoint.class);
         endpoint.setExpectedCount(0);
-        mockSupervision("SKIP");
+        mockSupervision(SKIP);
 
         camelContext.start(); // start CamelContext explicitly
 
@@ -74,10 +82,10 @@ class CamelTestingApplicationTests {
 
     }
 
-    void mockSupervision(String verdict) throws Exception {
+    void mockSupervision(SupervisorResponseDto.Verdict verdict) throws Exception {
         AdviceWith.adviceWith(camelContext, SUPERVISION_ROUTE_ID, in -> in
                 .interceptSendToEndpoint(propertiesProvider.getSupervisorEndpoint())
-                .setBody(exchange -> verdict));
+                .setBody(exchange -> new SupervisorResponseDto(verdict)));
     }
 
     void fileAppears() {

@@ -26,7 +26,7 @@ public class PropertyProviderImpl implements PropertiesProvider {
 
     @Override
     public String getSupervisorEndpoint() {
-        return "http://supervision";
+        return "http://localhost:8080/supervisor?httpMethod=POST";
     }
 
 }

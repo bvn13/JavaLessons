@@ -1,6 +1,6 @@
-camel:
-  springboot:
-    main-run-controller: true
+#camel:
+#  springboot:
+#    main-run-controller: true
 
 
 app:
