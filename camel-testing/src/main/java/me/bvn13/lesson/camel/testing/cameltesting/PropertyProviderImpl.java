@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class PropertyProviderImpl implements PropertiesProvider {
 
-    @Value("${app.input.folder}")
+    @Value("${app.input.folder:/tmp/in}")
     private String inputFolder;
 
-    @Value("${app.output.folder}")
+    @Value("${app.output.folder:/tmp/out}")
     private String outputFolder;
 
     @Override

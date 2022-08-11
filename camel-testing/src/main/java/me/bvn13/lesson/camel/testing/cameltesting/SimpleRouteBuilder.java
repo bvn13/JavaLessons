@@ -20,12 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.bvn13.lesson.camel.testing.cameltesting.SupervisorResponseDto.Verdict.SKIP;
-
-@Converter
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class SimpleRouteBuilder extends RouteBuilder {
 
     @Value("${app.bad-word}")
@@ -54,7 +51,7 @@ public class SimpleRouteBuilder extends RouteBuilder {
                 .log("processing ${header[CamelFileName]}")
                 .to("direct://supervisor")
                 .choice()
-                    .when(exchangeProperty(SUPERVISION_VERDICT).isEqualTo(SKIP))
+                    .when(exchangeProperty(SUPERVISION_VERDICT).isEqualTo(SupervisorResponseDto.Verdict.SKIP))
                         .to("direct://skip")
                     .otherwise()
                         .to("direct://process");

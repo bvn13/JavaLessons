@@ -9,10 +9,10 @@ public class SupervisorResponseDto {
 
     Verdict verdict;
 
-    @JsonCreator
-    public SupervisorResponseDto(@JsonProperty("verdict") Verdict verdict) {
-        this.verdict = verdict;
-    }
+//    @JsonCreator
+//    public SupervisorResponseDto(@JsonProperty("verdict") Verdict verdict) {
+//        this.verdict = verdict;
+//    }
 
     public enum Verdict {
         PROCESS,

@@ -24,9 +24,12 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.5.7'
 
-    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.13.0'
-    implementation 'org.apache.camel.springboot:camel-http-starter:3.13.0'
-    implementation 'org.apache.camel:camel-jackson:3.13.0'
+    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.15.0'
+    implementation 'org.apache.camel.springboot:camel-http-starter:3.15.0'
+    implementation 'org.apache.camel:camel-jackson:3.15.0'
+
+    implementation 'org.apache.camel.springboot:camel-rest-starter:3.15.0'
+    implementation 'org.apache.camel:camel-jetty:3.15.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
