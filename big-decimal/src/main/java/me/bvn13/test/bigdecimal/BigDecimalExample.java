@@ -15,12 +15,20 @@ public class BigDecimalExample {
 //        Currency tnd = Currency.getInstance("TND");
 //        System.out.println("TND:" + tnd.getDefaultFractionDigits());
 
+//        BigDecimal amount = new BigDecimal("4.12");
+//        System.out.println(amount);
+//        amount = amount.movePointRight(2);
+//        System.out.println(amount);
+//        amount = amount.movePointLeft(2);
+//        System.out.println(amount);
+
         BigDecimal amount = new BigDecimal("4.12");
-        System.out.println(amount);
-        amount = amount.movePointRight(2);
-        System.out.println(amount);
-        amount = amount.movePointLeft(2);
-        System.out.println(amount);
+        Currency eur = Currency.getInstance("EUR");
+        System.out.println(amount + " " + eur);
+        MoneyDto moneyDto = new MoneyDto(amount, eur);
+        System.out.println(moneyDto);
+
+
     }
 
     static void fromInteger() {
