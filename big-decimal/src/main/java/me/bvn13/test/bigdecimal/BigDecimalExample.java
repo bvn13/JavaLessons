@@ -28,7 +28,10 @@ public class BigDecimalExample {
         MoneyDto moneyDto = new MoneyDto(amount, eur);
         System.out.println(moneyDto);
 
-
+        MoneyDto incomingUsd = MoneyDto.fromJson("514", "USD");
+        System.out.println(incomingUsd + " -> " + incomingUsd.getAmount() + " " + incomingUsd.getCurrency());
+        MoneyDto incomingTnd = MoneyDto.fromJson("5148", "TND");
+        System.out.println(incomingTnd + " -> " + incomingTnd.getAmount() + " " + incomingTnd.getCurrency());
     }
 
     static void fromInteger() {
