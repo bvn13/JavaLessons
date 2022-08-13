@@ -22,16 +22,22 @@ public class BigDecimalExample {
 //        amount = amount.movePointLeft(2);
 //        System.out.println(amount);
 
-        BigDecimal amount = new BigDecimal("4.12");
-        Currency eur = Currency.getInstance("EUR");
-        System.out.println(amount + " " + eur);
-        MoneyDto moneyDto = new MoneyDto(amount, eur);
-        System.out.println(moneyDto);
+//        BigDecimal amount = new BigDecimal("4.12");
+//        Currency eur = Currency.getInstance("EUR");
+//        System.out.println(amount + " " + eur);
+//        MoneyDto moneyDto = new MoneyDto(amount, eur);
+//        System.out.println(moneyDto);
+//
+//        MoneyDto incomingUsd = MoneyDto.fromJson("514", "USD");
+//        System.out.println(incomingUsd + " -> " + incomingUsd.getAmount() + " " + incomingUsd.getCurrency());
+//        MoneyDto incomingTnd = MoneyDto.fromJson("5148", "TND");
+//        System.out.println(incomingTnd + " -> " + incomingTnd.getAmount() + " " + incomingTnd.getCurrency());
 
-        MoneyDto incomingUsd = MoneyDto.fromJson("514", "USD");
-        System.out.println(incomingUsd + " -> " + incomingUsd.getAmount() + " " + incomingUsd.getCurrency());
-        MoneyDto incomingTnd = MoneyDto.fromJson("5148", "TND");
-        System.out.println(incomingTnd + " -> " + incomingTnd.getAmount() + " " + incomingTnd.getCurrency());
+        BigDecimal amount = new BigDecimal("4.120000");
+        System.out.println(amount);
+        BigDecimal amount2 = new BigDecimal("4.120000");
+        Currency eur = Currency.getInstance("EUR");
+        System.out.println(NumberFormatHelper.currencyAmount(amount2, eur));
     }
 
     static void fromInteger() {
