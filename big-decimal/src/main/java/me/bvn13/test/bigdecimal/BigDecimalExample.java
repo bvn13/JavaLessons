@@ -5,10 +5,15 @@ import java.util.Currency;
 
 public class BigDecimalExample {
     public static void main(String[] args) {
-        fromInteger();
-        fromFloat();
-        a();
-        b();
+//        fromInteger();
+//        fromFloat();
+//        a();
+//        b();
+
+        Currency eur = Currency.getInstance("EUR");
+        System.out.println("EUR: " + eur.getDefaultFractionDigits());
+        Currency tnd = Currency.getInstance("TND");
+        System.out.println("TND:" + tnd.getDefaultFractionDigits());
     }
 
     static void fromInteger() {
