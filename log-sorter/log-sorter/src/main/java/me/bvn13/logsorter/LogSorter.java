@@ -32,6 +32,7 @@ public class LogSorter {
                 continue;
             }
             String previousLine = null;
+            int lineNum = 1;
             for (String line : lines) {
                 if (line.indexOf(" ") != timestampLength) {
                     previousLine = append(previousLine, line);
@@ -39,7 +40,7 @@ public class LogSorter {
                     if (previousLine != null) {
                         logs.add(new LogEntry(previousLine, filename));
                     }
-                    previousLine = line;
+                    previousLine = putLineNumber(timestampLength, lineNum++, lines.size(), line);
                 }
             }
             if (previousLine != null) {
@@ -58,6 +59,22 @@ public class LogSorter {
 
     private static String createDummy(int length) {
         return " ".repeat(Math.max(0, length));
+    }
+
+    private static String putLineNumber(int timestampLength, int lineNumber, int linesCount, String line) {
+        if (line.length() <= timestampLength) {
+            return line;
+        }
+        return line.substring(0, timestampLength) + "-" + fillNumber(lineNumber, digitsCount(linesCount)) + line.substring(timestampLength);
+    }
+
+    private static String fillNumber(int n, int length) {
+        final String s = "0".repeat(length) + n;
+        return s.substring(s.length() - length);
+    }
+
+    private static int digitsCount(int number) {
+        return String.valueOf(number).length();
     }
 
     private static String append(String a, String b) {
