@@ -8,3 +8,4 @@
 
 1) [Flexible Caffeine Cache Manager](flexible-caffeine-cache/FlexibleCaffeineCacheManager.java) - How to separate different cache configurations into one application using Caffeine cache
 2) [Big decimal example](big-decimal/src/main/java/me/bvn13/test/bigdecimal/BigDecimalExample.java)
+3) ['At least one group' Validator](https://gitea.bvn13.me/bvn13/JavaLessons/src/branch/master/AtLeastOneGroupValidator) - JavaX validator to check whether only one field is specified
